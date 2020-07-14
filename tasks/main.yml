@@ -1,0 +1,2 @@
+- include_tasks: prepHosts.yml
+- include_tasks: dockerDeploy.yml

@@ -1,0 +1,7 @@
+[controlPlane]
+k8head
+
+[nodes]
+k8node1
+k8node2
+k8node3

@@ -1,0 +1,33 @@
+---
+- name: Add mappings to /etc/hosts file
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      {{ item.ip }} {{item.name }} {{ item.fqdn }}
+    marker: "#{mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
+  loop:
+     - { name: k8head, ip: 192.168.164.30, fqdn: k8head.lab.local }
+     - { name: k8node1, ip: 192.168.164.31, fqdn: k8node1.lab.local }
+     - { name: k8node2, ip: 192.168.164.32, fqdn: k8node2.lab.local }
+     - { name: k8node3, ip: 192.168.164.33, fqdn: k8node3.lab.local }
+
+- name: Workaround install containerd
+  yum:
+    name: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
+    state: present
+
+- name: Install Base Requirements
+  yum:
+    name: "{{ packages }}"
+  vars:
+    packages:
+     - vim
+     - yum-utils
+     - device-mapper-persistent-data
+     - lvm2
+    state: latest
+
+
+
+
+

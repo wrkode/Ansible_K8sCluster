@@ -1,0 +1,68 @@
+---
+- name: Add Docker Repo
+  get_url:
+   url: https://download.docker.com/linux/centos/docker-ce.repo
+   dest: /etc/yum.repos.d/docker-ce.repo
+
+- name: Enable Docker Edge Repo
+  ini_file:
+    dest: /etc/yum.repos.d/docker-ce.repo
+    section: 'docker-ce-edge'
+    option: enabled
+    value: '0'
+
+- name: Enable Docker Test repo
+  ini_file:
+    dest: /etc/yum.repos.d/docer-ce.repo
+    section: 'docker-ce-test'
+    option: enabled
+    value: '0'
+
+- name: Install Docker
+  yum:
+    name: "{{ packages }}"
+  vars:
+    packages:
+     - docker-ce
+    state: latest
+
+- name: Create Docker Config root
+  file:
+    path: /etc/docker
+    state: directory
+    mode: '0755'
+
+- name: Create Docker JSON config
+  copy:
+    src: files/daemon.json
+    dest: /etc/docker/daemon.json
+
+- name: Create Docker Service Directory
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    mode: '0755'
+- name: Reload systemd configs
+  systemd:
+    daemon_reload: yes
+
+- name: Restart Docker Service
+  service:
+    name: docker
+    state: restarted
+
+- name: Enable Docker Service
+  service:
+    name:  docker
+    enabled: yes
+
+- name: Disable Firewall
+  service:
+    name: firewalld
+    enabled: no
+
+- name: Create User in docker Group
+  user:
+    name: dockeruser
+    comment: Docker DevOps User
+    group: docker
