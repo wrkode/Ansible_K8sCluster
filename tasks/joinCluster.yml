@@ -1,0 +1,10 @@
+---
+- name: Transfer join command
+  copy:
+    src: files/join_command
+    dest: /tmp/join_command.sh
+    mode: '0777'
+
+- name: Join Cluster
+  shell: /tmp/join_command.sh
+...

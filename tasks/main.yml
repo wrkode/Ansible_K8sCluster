@@ -1,2 +1,8 @@
 - include_tasks: prepHosts.yml
 - include_tasks: dockerDeploy.yml
+- include_tasks: kubetoolsDeploy.yml
+- include_tasks: kubernetesInit.yml
+  when: "'master' in group_names "
+- include_tasks: joinCluster.yml
+  when: "'nodes' in group_names "
+

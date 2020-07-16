@@ -1,0 +1,51 @@
+---
+# - name: Configure node ip
+#   vars:
+#     node_ip: "{{ ansible_default_ipv4.address }}"
+#   lineinfile:
+#     path: /etc/default/kubelet
+#     line: KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}
+
+# - name: Restart kubelet
+#   service:
+#     name: kubelet
+#     daemon_reload: yes
+#     state: restarted
+
+- name: Initialize Cluster
+  vars:
+    node_ip: "{{ ansible_default_ipv4.address }}"
+    hostname: "{{ ansible_fqdn }}"
+  command: kubeadm init --apiserver-advertise-address="{{ node_ip }}" --apiserver-cert-extra-sans="{{ node_ip }}" --node-name={{ hostname }} --pod-network-cidr="{{ node_ip }}"/24
+  
+- name: Create kubeconfig Directory
+  vars:
+    user: devuser
+  file:
+    path: /home/{{ user }}/.kube
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+  
+- name: Copy kube Config
+  vars:
+    user: devuser
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/{{ user}}/.kube/config
+    remote_src: true
+    owner: "{{ user }}"
+    group: "{{ user }}"
+
+- name: Install Pod Network add-on Calico
+  become: false
+  command: kubectl apply -f https://docs.projectcalico.org/v3.14/manifests/calico.yaml
+  
+- name: Generate kube join command
+  command: kubeadm token create --print-join-command
+  register: join_command
+
+- name: Copy join command to local file
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./files/join_command"
+
+...

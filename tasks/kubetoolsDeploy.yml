@@ -1,0 +1,28 @@
+---
+- name: Add Kubernetes Repo
+  template:
+   src: 'kubernetes.repo.j2'
+   dest: /etc/yum.repos.d/kubernetes.repo
+
+- name: Install Kubetools binaries
+  yum:
+    name: "{{ packages }}"
+    disable_excludes: kubernetes
+  vars:
+    packages:
+     - kubelet
+     - kubeadm
+     - kubectl
+    state: latest
+
+- name: Restart kubelet
+  service:
+    name: kubelet
+    daemon_reload: yes
+    state: restarted
+
+- name: Enable kubelet Service
+  service:
+    name:  kubelet
+    enabled: yes
+...

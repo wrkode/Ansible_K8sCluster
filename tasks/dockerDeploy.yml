@@ -56,11 +56,6 @@
     name:  docker
     enabled: yes
 
-- name: Disable Firewall
-  service:
-    name: firewalld
-    enabled: no
-
 - name: Create User in docker Group
   user:
     name: dockeruser

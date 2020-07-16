@@ -11,7 +11,7 @@
      - { name: k8node2, ip: 192.168.164.32, fqdn: k8node2.lab.local }
      - { name: k8node3, ip: 192.168.164.33, fqdn: k8node3.lab.local }
 
-- name: Workaround install containerd
+- name: Workaround install containerd (CentOS)
   yum:
     name: https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
     state: present
@@ -25,8 +25,81 @@
      - yum-utils
      - device-mapper-persistent-data
      - lvm2
+     - bash-completion
+     - iproute-tc
     state: latest
 
+- name: Set SELinux Permissive
+  selinux:
+    policy: targeted
+    state: permissive
+
+# This seems not required once Docker is deployed....to be verified
+# - name: Set iptables bridging
+#  sysctl:
+#    name: '{{ item.key }}'
+#    value: '{{ item.value }}'
+#    sysctl_set: yes
+#    state: present
+#    reload: yes
+#  ignore_errors: True
+#  with_items:
+#    - {key: net.bridge.bridge-nf-call-ip6tables, value: 1}
+#    - {key: net.bridge.bridge-nf-call-iptables,  value: 1}
+#    - {key: net.ipv4.ip_forward,  value: 1}
+
+# This seems not required once Docker is deployed....to be verified
+- name: Set Permanent sysctl entries
+  template:
+   src: 'sysctlEntries.j2'
+   dest: /etc/sysctl.d/k8s.conf
+
+- name: Load sysctl Config files
+  shell: "sysctl --system"
+
+- name: Stop Firewall
+  service: 
+    name: firewalld
+    state: stopped
+
+- name: Disable Firewall
+  service:
+    name: firewalld
+    enabled: no
+
+- name: Disable swap
+  shell: "swapoff -a"
+
+# This is not doing the job...need improvement.
+#- name: Remove swap from fstab
+#  mount:
+#    name: "{{ item }} "
+#    fstype: swap
+#    state: absent
+#  with_items:
+#    - swap
+
+# Commenting out seems the best approach for the moment.
+- name: Disable swap in fstab 
+  replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+.*)$'
+    replace: '# \1'
+
+- name: Create user groups
+  group:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - devuser
+    - docker
+
+- name: Add kubernetes admin to group
+  user:
+    name: devuser
+    groups: devuser,wheel
+    append: yes
+...
 
 
 
