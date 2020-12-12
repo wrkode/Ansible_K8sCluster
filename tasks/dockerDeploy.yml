@@ -58,6 +58,6 @@
 
 - name: Create User in docker Group
   user:
-    name: dockeruser
+    name: "{{ dckUser }}"
     comment: Docker DevOps User
-    group: docker
+    group: "{{ dckUser }}"

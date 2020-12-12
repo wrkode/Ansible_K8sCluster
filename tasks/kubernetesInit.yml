@@ -13,29 +13,25 @@
 #     state: restarted
 
 - name: Initialize Cluster
-  vars:
-    node_ip: "{{ ansible_default_ipv4.address }}"
-    hostname: "{{ ansible_fqdn }}"
-  command: kubeadm init --apiserver-advertise-address="{{ node_ip }}" --apiserver-cert-extra-sans="{{ node_ip }}" --node-name={{ hostname }} --pod-network-cidr="{{ node_ip }}"/24
+  # vars:
+  #   node_ip: "{{ ansible_default_ipv4.address }}"
+  #   hostname: "{{ ansible_fqdn }}"
+  command: kubeadm init --apiserver-advertise-address=192.168.164.30 --apiserver-cert-extra-sans=192.168.164.30 --node-name k8head --pod-network-cidr=10.15.0.0/16
   
 - name: Create kubeconfig Directory
-  vars:
-    user: devuser
   file:
-    path: /home/{{ user }}/.kube
+    path: /home/{{ k8User }}/.kube
     state: directory
-    owner: "{{ user }}"
-    group: "{{ user }}"
+    owner: "{{ k8User }}"
+    group: "{{ k8User }}"
   
 - name: Copy kube Config
-  vars:
-    user: devuser
   copy:
     src: /etc/kubernetes/admin.conf
-    dest: /home/{{ user}}/.kube/config
+    dest: /home/{{ k8User }}/.kube/config
     remote_src: true
-    owner: "{{ user }}"
-    group: "{{ user }}"
+    owner: "{{ k8User }}"
+    group: "{{ k8User }}"
 
 - name: Install Pod Network add-on Calico
   become: false
