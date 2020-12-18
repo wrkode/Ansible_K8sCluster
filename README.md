@@ -1,4 +1,4 @@
-# Kubernetes Cluster Build With Ansible Playbook
+# Kubernetes Cluster Build With Ansible
 
 Builds a K8s cluster with Single Control Plane:
 - 1 Master and 3 nodes
